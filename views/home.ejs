@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to my site</h1>
+
+        <div class="page-content">
+            <% if (!user) { %>
+                <a href="/signup" class="btn">Sign Up</a>
+                <a href="/login" class="btn">Log In</a>
+            <% } else { %>
+                <p>Hello, <%= user %>!</p>
+                <a href="/members" class="btn">Go to Members Area</a>
+                <a href="/logout" class="btn">Logout</a>
+            <% } %>
+
+            <img src="/image3.png" alt="Welcome Image">
+        </div>
+    </div>
+</body>
+</html>
