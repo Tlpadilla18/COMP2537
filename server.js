@@ -8,7 +8,6 @@ const dotenv = require('dotenv');
 const Joi = require('joi');
 const path = require('path');
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
@@ -16,11 +15,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
-// Build MongoDB URI from environment variables
 const mongoURI = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}` +
     `@${process.env.MONGODB_HOST}/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority`;
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose.connect(mongoURI);
 
 // Set up session middleware
@@ -30,7 +28,7 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: mongoURI,
-        ttl: 3600 // 1 hour
+        ttl: 3600 
     }),
     cookie: { maxAge: 3600000 }
 }));
