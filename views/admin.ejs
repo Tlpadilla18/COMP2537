@@ -1,0 +1,41 @@
+<%- include('templates/header', { title: 'Admin Panel' , user: currentUser.name }) %>
+
+    <div class="container mt-4">
+        <h2>Admin Panel</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(user=> { %>
+                    <tr>
+                        <td>
+                            <%= user.name %>
+                        </td>
+                        <td>
+                            <%= user.email %>
+                        </td>
+                        <td>
+                            <%= user.role %>
+                        </td>
+                        <td>
+                            <% if (user.role==='user' ) { %>
+                                <a href="/promote/<%= user._id %>" class="btn btn-sm btn-success">Promote</a>
+                                <% } else if (user._id.toString() !==currentUser._id.toString()) { %>
+                                    <a href="/demote/<%= user._id %>" class="btn btn-sm btn-warning">Demote</a>
+                                    <% } else { %>
+                                        <span class="text-muted">You</span>
+                                        <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('templates/footer') %>

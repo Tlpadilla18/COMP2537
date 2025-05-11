@@ -28,7 +28,7 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: mongoURI,
-        ttl: 3600 
+        ttl: 3600
     }),
     cookie: { maxAge: 3600000 }
 }));
@@ -37,7 +37,8 @@ app.use(session({
 const userSchema = new mongoose.Schema({
     name: String,
     email: { type: String, unique: true },
-    password: String
+    password: String,
+    role: { type: String, default: 'user' }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -68,6 +69,7 @@ app.post('/signup', async (req, res) => {
         const user = await User.create({ name, email, password: hashed });
         req.session.userId = user._id;
         req.session.name = user.name;
+        req.session.role = user.role; 
         res.redirect('/members');
     } catch (err) {
         res.render('signup', { message: 'User already exists or invalid input' });
@@ -93,15 +95,38 @@ app.post('/login', async (req, res) => {
 
     req.session.userId = user._id;
     req.session.name = user.name;
+    req.session.role = user.role; 
     res.redirect('/members');
 });
 
 app.get('/members', (req, res) => {
     if (!req.session.userId) return res.redirect('/');
     const images = ['img1.jpg', 'img2.jpg', 'img3.jpg'];
-    const randomImage = images[Math.floor(Math.random() * images.length)];
-    res.render('members', { name: req.session.name, image: randomImage });
+    res.render('members', { name: req.session.name, images }); 
 });
+
+app.get('/admin', async (req, res) => {
+    if (!req.session.userId) return res.redirect('/login');
+
+    const currentUser = await User.findById(req.session.userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+        return res.status(403).send("403 Forbidden: You are not authorized to view this page.");
+    }
+
+    const users = await User.find();
+    res.render('admin', { users, currentUser });
+});
+
+app.get('/promote/:id', async (req, res) => {
+    await User.findByIdAndUpdate(req.params.id, { role: 'admin' });
+    res.redirect('/admin');
+});
+
+app.get('/demote/:id', async (req, res) => {
+    await User.findByIdAndUpdate(req.params.id, { role: 'user' });
+    res.redirect('/admin');
+});
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/'));
