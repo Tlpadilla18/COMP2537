@@ -42,6 +42,25 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
+// ------------------- Middleware -------------------
+function requireLogin(req, res, next) {
+    if (req.session.userId) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
+
+function requireAdmin(req, res, next) {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    if (req.session.role !== 'admin') {
+        return res.status(403).send('403 Forbidden: Admins only.');
+    }
+    next();
+}
+
 // Routes
 app.get('/', (req, res) => {
     if (!req.session.userId) {
@@ -69,7 +88,7 @@ app.post('/signup', async (req, res) => {
         const user = await User.create({ name, email, password: hashed });
         req.session.userId = user._id;
         req.session.name = user.name;
-        req.session.role = user.role; 
+        req.session.role = user.role;
         res.redirect('/members');
     } catch (err) {
         res.render('signup', { message: 'User already exists or invalid input' });
@@ -95,14 +114,14 @@ app.post('/login', async (req, res) => {
 
     req.session.userId = user._id;
     req.session.name = user.name;
-    req.session.role = user.role; 
+    req.session.role = user.role;
     res.redirect('/members');
 });
 
 app.get('/members', (req, res) => {
     if (!req.session.userId) return res.redirect('/');
     const images = ['img1.jpg', 'img2.jpg', 'img3.jpg'];
-    res.render('members', { name: req.session.name, images }); 
+    res.render('members', { name: req.session.name, images });
 });
 
 app.get('/admin', async (req, res) => {
